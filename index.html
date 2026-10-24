@@ -46,7 +46,7 @@
   .badge b { font-size: 18px; font-weight: 600; letter-spacing: -.01em; white-space: nowrap; }
   .badge[hidden] { display: none; }
 
-  body { background: radial-gradient(900px 600px at 50% -10%, rgba(124,104,255,.35), transparent 60%), #0D0B16; color: #F4F2FF; font-family: "Manrope", system-ui, sans-serif; display: grid; place-items: center; padding: 28px 20px; }
+  body { background: radial-gradient(900px 600px at 50% -10%, rgba(124,104,255,.35), transparent 60%), #0D0B16; color: #F4F2FF; font-family: "Manrope", "Hiragino Sans", "Hiragino Kaku Gothic ProN", "Noto Sans JP", "Yu Gothic", system-ui, sans-serif; display: grid; place-items: center; padding: 28px 20px; }
   .wrap { width: 100%; max-width: 440px; text-align: center; }
   .icon { width: 84px; height: 84px; border-radius: 20px; box-shadow: 0 20px 60px rgba(124,104,255,.45); }
   .name { margin-top: 14px; font-size: 14px; font-weight: 700; color: #B9B2DA; letter-spacing: .02em; }
@@ -85,13 +85,20 @@
   document.getElementById("ios").href = s.ios;
   if (s.android) document.getElementById("android").href = s.android; else document.getElementById("android").hidden = true;
   var fav = document.createElement("link"); fav.rel = "icon"; fav.href = document.querySelector("[data-icon]").src; document.head.appendChild(fav);
-  var DAYS = {"en": [["⌨️", "International Caps Lock Day", "#CapsLockDay"], ["🍫", "National Chocolate Day", "#NationalChocolateDay"], ["🎬", "National Horror Movie Day", "#HorrorMovieDay"], ["🍝", "World Pasta Day", "#WorldPastaDay"], ["👨‍🍳", "International Chefs Day", "#InternationalChefsDay"]], "tr": [["⌨️", "CAPS LOCK Günü", "#CAPSLOCKGÜNÜ"], ["🍫", "Çikolata Günü", "#ÇikolataGünü"], ["🎬", "Korku Filmi Günü", "#KorkuFilmiGünü"], ["🍝", "Dünya Makarna Günü", "#DünyaMakarnaGünü"], ["👨‍🍳", "Dünya Aşçılar Günü", "#DünyaAşçılarGünü"]]};
-  var lang = new URLSearchParams(location.search).get("lang") || ((navigator.language || "").toLowerCase().indexOf("tr") === 0 ? "tr" : "en");
-  if (lang !== "tr") lang = "en";
-  if (lang === "tr") {
-    document.documentElement.lang = "tr"; document.title = "Bugün Günlerden Ne?";
-    var tr = {"ios1": "Hemen indirin", "and1": "HEMEN İNDİRİN", "name": "Bugün Günlerden Ne?", "h1": "Her gün <span>kutlanacak bir şey var.</span>", "pill": "Özel gün", "foot": "iPhone ve Android’de"};
-    document.querySelectorAll("[data-t]").forEach(function (el) { var k = el.getAttribute("data-t"); if (tr[k] != null) el.innerHTML = tr[k]; });
+  var DAYS = {"en": [["⌨️", "International Caps Lock Day", "#CapsLockDay"], ["🍫", "National Chocolate Day", "#NationalChocolateDay"], ["🎬", "National Horror Movie Day", "#HorrorMovieDay"], ["🍝", "World Pasta Day", "#WorldPastaDay"], ["👨‍🍳", "International Chefs Day", "#InternationalChefsDay"]], "tr": [["⌨️", "CAPS LOCK Günü", "#CAPSLOCKGÜNÜ"], ["🍫", "Çikolata Günü", "#ÇikolataGünü"], ["🎬", "Korku Filmi Günü", "#KorkuFilmiGünü"], ["🍝", "Dünya Makarna Günü", "#DünyaMakarnaGünü"], ["👨‍🍳", "Dünya Aşçılar Günü", "#DünyaAşçılarGünü"]], "ja": [["⌨️", "CAPS LOCKの日", "#キャップスロックの日"], ["🍫", "チョコレートの日", "#チョコレートの日"], ["🎬", "ホラー映画の日", "#ホラー映画の日"], ["🍝", "世界パスタデー", "#世界パスタデー"], ["👨‍🍳", "国際シェフの日", "#国際シェフの日"]]};
+  // Dil: linkteki ?lang=, yoksa /en/ /tr/ /ja/ klasörü, yoksa cihaz dili
+  var nav = (navigator.language || "").toLowerCase();
+  var lang = new URLSearchParams(location.search).get("lang") || window.FORCE_LANG ||
+             (nav.indexOf("tr") === 0 ? "tr" : nav.indexOf("ja") === 0 ? "ja" : "en");
+  if (lang !== "tr" && lang !== "ja") lang = "en";
+  var T = {
+    tr: {title: "Bugün Günlerden Ne?", "ios1": "Hemen indirin", "and1": "HEMEN İNDİRİN", "name": "Bugün Günlerden Ne?", "h1": "Her gün <span>kutlanacak bir şey var.</span>", "pill": "Özel gün", "foot": "iPhone ve Android’de"},
+    ja: {title: "今日は何の日？", "ios1": "ダウンロード", "and1": "今すぐ手に入れよう", "name": "今日は何の日？", "h1": "毎日が、<br><span>なにかの記念日。</span>", "pill": "今日の記念日", "foot": "iPhone・Androidで配信中"}
+  };
+  if (T[lang]) {
+    var tx = T[lang];
+    document.documentElement.lang = lang; document.title = tx.title;
+    document.querySelectorAll("[data-t]").forEach(function (el) { var k = el.getAttribute("data-t"); if (tx[k] != null) el.innerHTML = tx[k]; });
   }
   // Rotating example days (examples only; not a claim about today's date)
   var list = DAYS[lang], i = 0;
@@ -106,7 +113,7 @@
   show();
   if (!window.__still) setInterval(show, 2400);
   // Visitor's own date (used by the calendar variant)
-  var now = new Date(), loc = lang === "tr" ? "tr-TR" : "en-US";
+  var now = new Date(), loc = lang === "tr" ? "tr-TR" : lang === "ja" ? "ja-JP" : "en-US";
   document.querySelectorAll("[data-date-month]").forEach(function (e) { e.textContent = now.toLocaleDateString(loc, { month: "long" }); });
   document.querySelectorAll("[data-date-day]").forEach(function (e) { e.textContent = now.getDate(); });
   document.querySelectorAll("[data-date-weekday]").forEach(function (e) { e.textContent = now.toLocaleDateString(loc, { weekday: "long" }); });
